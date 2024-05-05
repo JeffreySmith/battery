@@ -1,0 +1,3 @@
+Battery state: high, 98% remaining, unknown life estimate
+AC adapter state: connected
+Performance adjustment mode: auto (1901 MHz)
