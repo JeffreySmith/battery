@@ -1,0 +1,3 @@
+Battery state: absent, 0% remaining, unknown life estimate
+AC adapter state: not known
+Performance adjustment mode: manual (0 MHz)
