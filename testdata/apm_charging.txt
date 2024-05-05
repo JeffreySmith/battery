@@ -1,0 +1,3 @@
+Battery state: charging, 90% remaining, 41 minutes recharge time estimate
+AC adapter state: connected
+Performance adjustment mode: auto (1901 MHz)

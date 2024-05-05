@@ -1,0 +1,3 @@
+Battery state: high, 90% remaining, 594 minutes life estimate
+AC adapter state: not connected
+Performance adjustment mode: auto (1901 MHz)
