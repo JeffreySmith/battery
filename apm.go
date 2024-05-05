@@ -43,7 +43,7 @@ var batteryPercent = regexp.MustCompile("([0-9]+)%")
 var minuteOutput = regexp.MustCompile("([0-9]+) minutes")
 var state = regexp.MustCompile("Battery state: ([a-z]+)")
 
-//These Values come from the apm man page
+// These Values come from the apm man page
 const (
 	High     BatteryStatus = 0
 	Low      BatteryStatus = 1
@@ -53,7 +53,6 @@ const (
 	Unknown  BatteryStatus = 255
 )
 
-	
 func (b BatteryStatus) String() string {
 	switch b {
 	case High:
@@ -81,7 +80,7 @@ func GetApmOutput(cmd string) (string, error) {
 	return string(data), err
 }
 
-func (b *Battery)ParseApmBatteryLife(input string) error {
+func (b *Battery) ParseApmBatteryLife(input string) error {
 	var hours, minutes int
 	var err error
 	matches := minuteOutput.FindStringSubmatch(input)
@@ -95,15 +94,15 @@ func (b *Battery)ParseApmBatteryLife(input string) error {
 		b.Hours = hours
 		b.Minutes = minutes
 		return nil
-	} 
+	}
 	return errors.New("Couldn't find battery life minutes")
 }
-func (b *Battery)ParseApmCharging(input string) error {
+func (b *Battery) ParseApmCharging(input string) error {
 	matches := state.FindStringSubmatch(input)
 	if len(matches) == 2 {
 		if matches[1] == "charging" {
 			b.Charging = true
-		} else{
+		} else {
 			b.Charging = false
 		}
 		return nil
@@ -111,10 +110,10 @@ func (b *Battery)ParseApmCharging(input string) error {
 	return errors.New("No status found")
 }
 
-func (b *Battery)ParseApmBatteryPercent(input string) error {
+func (b *Battery) ParseApmBatteryPercent(input string) error {
 	matches := batteryPercent.FindStringSubmatch(input)
 	if len(matches) == 2 {
-		val,err := strconv.Atoi(matches[1])
+		val, err := strconv.Atoi(matches[1])
 		if err != nil {
 			return err
 		}
@@ -123,27 +122,27 @@ func (b *Battery)ParseApmBatteryPercent(input string) error {
 	}
 	return errors.New("Couldn't find battery percent")
 }
-func (b *Battery)ParseApmOutput(input string) error{
-	battery,err := ParseApmOutput(input)
+func (b *Battery) ParseApmOutput(input string) error {
+	battery, err := ParseApmOutput(input)
 	if err != nil {
 		return err
 	}
 	*b = battery
 	return nil
 }
-func ParseApmOutput(input string) (Battery, error){
+func ParseApmOutput(input string) (Battery, error) {
 	battery := Battery{}
 	err := battery.ParseApmBatteryLife(input)
 	if err != nil {
-		return Battery{},err
+		return Battery{}, err
 	}
 	err = battery.ParseApmBatteryPercent(input)
 	if err != nil {
-		return Battery{},err
+		return Battery{}, err
 	}
 	err = battery.ParseApmCharging(input)
 	if err != nil {
-		return Battery{},err
+		return Battery{}, err
 	}
 	return battery, nil
 }
