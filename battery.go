@@ -1,6 +1,7 @@
 package battery
 
 type BatteryStatus int
+type Mode int
 
 type Battery struct {
 	ChargePercent int
@@ -8,5 +9,5 @@ type Battery struct {
 	Hours         int
 	Minutes       int
 	Charging      bool
-	
+	PerformanceMode Mode
 }
