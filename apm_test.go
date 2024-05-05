@@ -31,13 +31,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package battery_test
 
 import (
-	"github.com/JeffreySmith/battery"
-	"github.com/google/go-cmp/cmp"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/JeffreySmith/battery"
+	"github.com/google/go-cmp/cmp"
 )
 
+func TestApmBatteryStatus(t *testing.T) {
+	t.Parallel()
+	if _, err := exec.LookPath("/usr/sbin/apm"); err != nil {
+		t.Skipf("Unable to run 'apm' command, skipping: %v", err)
+	}
+	_, err := battery.ApmBatteryStat()
+	if err != nil {
+		t.Error(err)
+	}
+}
 func TestBatteryLifeParse(t *testing.T) {
 	t.Parallel()
 	data, err := os.ReadFile("testdata/apm.txt")
@@ -47,6 +59,22 @@ func TestBatteryLifeParse(t *testing.T) {
 	want := battery.Battery{Hours: 9, Minutes: 54}
 	got := battery.Battery{}
 	err = got.ParseApmBatteryLife(string(data))
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+func TestBatteryLifeUnknown(t *testing.T) {
+	t.Parallel()
+	data, err := os.ReadFile("testdata/apm_unknown.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := battery.Battery{Minutes: -1}
+	got := battery.Battery{}
+	err = got.ParseApmBatteryLife(string(data))
+	if err != nil {
+		t.Error(err)
+	}
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
@@ -61,9 +89,12 @@ func TestBatteryLifeParseBadInput(t *testing.T) {
 }
 func TestApmCommandOutput(t *testing.T) {
 	t.Parallel()
+	if _, err := exec.LookPath("/usr/sbin/apm"); err != nil {
+		t.Skipf("Unable to run 'apm' command, skipping: %v", err)
+	}
 	data, err := battery.GetApmOutput("/usr/sbin/apm")
 	if err != nil {
-		t.Skipf("Unable to run 'apm' command: %v", err)
+		t.Error(err)
 	}
 	if !strings.Contains(data, "Battery state") {
 		t.Skipf("No battery detected")
@@ -75,7 +106,7 @@ func TestApmCommandOutput(t *testing.T) {
 }
 func TestFailedApm(t *testing.T) {
 	t.Parallel()
-	_, err := battery.GetApmOutput("/usr/bin/notapm")
+	_, err := battery.GetApmOutput("/usr/sbin/notapm")
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}

@@ -32,11 +32,14 @@ package battery
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"math"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var batteryPercent = regexp.MustCompile("([0-9]+)%")
@@ -51,6 +54,7 @@ const (
 	Charging BatteryStatus = 3
 	Absent   BatteryStatus = 4
 	Unknown  BatteryStatus = 255
+	Invalid  BatteryStatus = 256
 )
 
 func (b BatteryStatus) String() string {
@@ -69,6 +73,22 @@ func (b BatteryStatus) String() string {
 		return "Unknown"
 	default:
 		return fmt.Sprintf("%d", b)
+	}
+}
+
+func ApmBatteryStat() (BatteryStatus, error) {
+	data, err := exec.Command("/usr/sbin/apm", "-b").CombinedOutput()
+	if err != nil {
+		return Unknown, err
+	}
+	ret, err := strconv.Atoi(strings.Trim(string(data), "\n"))
+	if err != nil {
+		return Unknown, err
+	}
+	if ret == 0 || ret == 1 || ret == 2 || ret == 3 || ret == 4 || ret == 255 {
+		return BatteryStatus(ret), nil
+	} else {
+		return Unknown, errors.New("Unexpected return value")
 	}
 }
 
@@ -94,8 +114,15 @@ func (b *Battery) ParseApmBatteryLife(input string) error {
 		b.Hours = hours
 		b.Minutes = minutes
 		return nil
+	} else if strings.Contains(input, "Battery state: absent") {
+		return errors.New("Couldn't find battery life minutes")
+	} else if strings.Contains(input, "unknown life estimate") {
+		b.Hours = 0
+		b.Minutes = -1
+		return nil
 	}
-	return errors.New("Couldn't find battery life minutes")
+	return errors.New("Unable to read remaining battery minutes")
+
 }
 func (b *Battery) ParseApmCharging(input string) error {
 	matches := state.FindStringSubmatch(input)
@@ -145,4 +172,38 @@ func ParseApmOutput(input string) (Battery, error) {
 		return Battery{}, err
 	}
 	return battery, nil
+}
+func (b *Battery) PrintTimeRemaining() {
+	if b.Minutes < 0 {
+		fmt.Println("Estimated remaining time: Unknown")
+	} else if b.Minutes < 10 {
+		fmt.Printf("Estimated remaining time: %dh0%dm\n", b.Hours, b.Minutes)
+	} else {
+		fmt.Printf("Estimated remaining time: %dh%dm\n", b.Hours, b.Minutes)
+	}
+
+}
+func OpenBSDMain() int {
+	timeRemaining := flag.Bool("t", true, "Show time remaining")
+	chargeStatus := flag.Bool("p", false, "Show whether the computer is charging")
+
+	flag.Parse()
+	apm_output, err := GetApmOutput("/usr/sbin/apm")
+	battery, err := ParseApmOutput(apm_output)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	if *chargeStatus {
+		if battery.Charging {
+			fmt.Printf("Status: Charging\n")
+		} else {
+			fmt.Printf("Status: Not Charging\n")
+		}
+	}
+	if *timeRemaining {
+		battery.PrintTimeRemaining()
+	}
+
+	return 0
 }
