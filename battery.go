@@ -32,7 +32,7 @@ package battery
 
 type BatteryStatus int
 type Mode int
-
+type Adapter int
 type Battery struct {
 	ChargePercent    int
 	Battery          BatteryStatus
@@ -40,5 +40,5 @@ type Battery struct {
 	Minutes          int
 	Charging         bool
 	PerformanceMode  Mode
-	AdapterConnected bool
+	AdapterConnected Adapter
 }

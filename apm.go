@@ -57,6 +57,24 @@ const (
 	Invalid  BatteryStatus = 256
 )
 
+const (
+	UnknownAdapter Adapter = 0
+	Disconnected   Adapter = 1
+	Connected      Adapter = 2
+)
+
+func (a Adapter) String() string {
+	switch a {
+	case UnknownAdapter:
+		return "Unknown"
+	case Disconnected:
+		return "Not Connected"
+	case Connected:
+		return "Connected"
+	default:
+		return ""
+	}
+}
 func (b BatteryStatus) String() string {
 	switch b {
 	case High:
@@ -98,6 +116,18 @@ func GetApmOutput(cmd string) (string, error) {
 		return "", err
 	}
 	return string(data), err
+}
+
+func (b *Battery) ParseAdapterStatus(input string) {
+	var status Adapter
+	if strings.Contains(input, "not connected") {
+		status = Disconnected
+	} else if strings.Contains(input, "connected") {
+		status = Connected
+	} else {
+		status = UnknownAdapter
+	}
+	b.AdapterConnected = status
 }
 
 func (b *Battery) ParseApmBatteryLife(input string) error {
@@ -171,6 +201,7 @@ func ParseApmOutput(input string) (Battery, error) {
 	if err != nil {
 		return Battery{}, err
 	}
+	battery.ParseAdapterStatus(input)
 	return battery, nil
 }
 func (b *Battery) PrintTimeRemaining() {
@@ -186,6 +217,7 @@ func (b *Battery) PrintTimeRemaining() {
 func OpenBSDMain() int {
 	timeRemaining := flag.Bool("t", true, "Show time remaining")
 	chargeStatus := flag.Bool("p", false, "Show whether the computer is charging")
+	adapterStatus := flag.Bool("a", false, "Show the status of the adapter")
 
 	flag.Parse()
 	apm_output, err := GetApmOutput("/usr/sbin/apm")
@@ -200,6 +232,9 @@ func OpenBSDMain() int {
 		} else {
 			fmt.Printf("Status: Not Charging\n")
 		}
+	}
+	if *adapterStatus {
+		fmt.Printf("Adapter Status: %v\n", battery.AdapterConnected)
 	}
 	if *timeRemaining {
 		battery.PrintTimeRemaining()

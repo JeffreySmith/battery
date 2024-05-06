@@ -183,10 +183,11 @@ func TestApmInputToString(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Battery{
-		ChargePercent: 90,
-		Hours:         9,
-		Minutes:       54,
-		Charging:      false,
+		ChargePercent:    90,
+		Hours:            9,
+		Minutes:          54,
+		Charging:         false,
+		AdapterConnected: battery.Disconnected,
 	}
 	got, err := battery.ParseApmOutput(string(data))
 	if err != nil {
@@ -203,10 +204,11 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Battery{
-		ChargePercent: 90,
-		Hours:         9,
-		Minutes:       54,
-		Charging:      false,
+		ChargePercent:    90,
+		Hours:            9,
+		Minutes:          54,
+		Charging:         false,
+		AdapterConnected: battery.Disconnected,
 	}
 	got := battery.Battery{}
 	err = got.ParseApmOutput(string(data))
@@ -220,8 +222,53 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 func TestApmWithNoBatteryInput(t *testing.T) {
 	t.Parallel()
 	f, err := os.ReadFile("testdata/apm_nobattery.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
 	_, err = battery.ParseApmOutput(string(f))
 	if err == nil {
 		t.Error(err)
+	}
+}
+func TestApmAdapterDisconnected(t *testing.T) {
+	t.Parallel()
+	f, err := os.ReadFile("testdata/apm.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := battery.Disconnected
+	got := battery.Battery{AdapterConnected: battery.UnknownAdapter}
+	got.ParseAdapterStatus(string(f))
+
+	if got.AdapterConnected != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
+	}
+}
+func TestApmAdapterUnknown(t *testing.T) {
+	t.Parallel()
+	f, err := os.ReadFile("testdata/apm_nobattery.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := battery.UnknownAdapter
+	got := battery.Battery{AdapterConnected: battery.Connected}
+	got.ParseAdapterStatus(string(f))
+
+	if got.AdapterConnected != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
+	}
+}
+func TestApmAdapterConnected(t *testing.T) {
+	t.Parallel()
+	f, err := os.ReadFile("testdata/apm_charging.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := battery.Connected
+	got := battery.Battery{AdapterConnected: battery.UnknownAdapter}
+	got.ParseAdapterStatus(string(f))
+
+	if got.AdapterConnected != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
 	}
 }
