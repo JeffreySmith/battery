@@ -1,0 +1,3 @@
+Battery state: charging, 98% remaining, unknown recharge time estimate
+AC adapter state: connected
+Performance adjustment mode: auto (1901 MHz)
