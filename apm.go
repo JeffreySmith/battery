@@ -38,6 +38,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -54,7 +55,6 @@ const (
 	Charging BatteryStatus = 3
 	Absent   BatteryStatus = 4
 	Unknown  BatteryStatus = 255
-	Invalid  BatteryStatus = 256
 )
 
 const (
@@ -117,7 +117,25 @@ func GetApmOutput(cmd string) (string, error) {
 	}
 	return string(data), err
 }
-
+func (b *Battery) ParseBatteryState(input string) {
+	matches := state.FindStringSubmatch(input)
+	if len(matches) == 2 {
+		switch matches[1] {
+		case "charging":
+			b.Battery = Charging
+		case "absent":
+			b.Battery = Absent
+		case "high":
+			b.Battery = High
+		case "low":
+			b.Battery = Low
+		case "critical":
+			b.Battery = Critical
+		}
+	} else {
+		b.Battery = Unknown
+	}
+}
 func (b *Battery) ParseAdapterStatus(input string) {
 	var status Adapter
 	if strings.Contains(input, "not connected") {
@@ -145,8 +163,14 @@ func (b *Battery) ParseApmBatteryLife(input string) error {
 		b.Minutes = minutes
 		return nil
 	} else if strings.Contains(input, "Battery state: absent") {
-		return errors.New("Couldn't find battery life minutes")
+		b.Hours = 0
+		b.Minutes = -1
+		return nil
 	} else if strings.Contains(input, "unknown life estimate") {
+		b.Hours = 0
+		b.Minutes = -1
+		return nil
+	} else if strings.Contains(input, "unknown recharge time") {
 		b.Hours = 0
 		b.Minutes = -1
 		return nil
@@ -202,6 +226,7 @@ func ParseApmOutput(input string) (Battery, error) {
 		return Battery{}, err
 	}
 	battery.ParseAdapterStatus(input)
+	battery.ParseBatteryState(input)
 	return battery, nil
 }
 func (b *Battery) PrintTimeRemaining() {
@@ -215,9 +240,15 @@ func (b *Battery) PrintTimeRemaining() {
 
 }
 func OpenBSDMain() int {
+
+	OS := runtime.GOOS
+	if OS != "openbsd" {
+		return 2
+	}
 	timeRemaining := flag.Bool("t", true, "Show time remaining")
-	chargeStatus := flag.Bool("p", false, "Show whether the computer is charging")
+	chargeStatus := flag.Bool("s", false, "Show whether the computer is charging")
 	adapterStatus := flag.Bool("a", false, "Show the status of the adapter")
+	percentRemaining := flag.Bool("p", false, "Show estimated remaining battery percent")
 
 	flag.Parse()
 	apm_output, err := GetApmOutput("/usr/sbin/apm")
@@ -236,9 +267,11 @@ func OpenBSDMain() int {
 	if *adapterStatus {
 		fmt.Printf("Adapter Status: %v\n", battery.AdapterConnected)
 	}
+	if *percentRemaining {
+		fmt.Printf("Remaining battery: %d%%\n", battery.ChargePercent)
+	}
 	if *timeRemaining {
 		battery.PrintTimeRemaining()
 	}
-
 	return 0
 }

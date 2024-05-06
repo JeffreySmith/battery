@@ -188,6 +188,7 @@ func TestApmInputToString(t *testing.T) {
 		Minutes:          54,
 		Charging:         false,
 		AdapterConnected: battery.Disconnected,
+		Battery:          battery.High,
 	}
 	got, err := battery.ParseApmOutput(string(data))
 	if err != nil {
@@ -225,9 +226,23 @@ func TestApmWithNoBatteryInput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = battery.ParseApmOutput(string(f))
-	if err == nil {
+	b, err := battery.ParseApmOutput(string(f))
+	if err != nil {
 		t.Error(err)
+	}
+	if b.Battery != battery.Absent {
+		t.Errorf("Expected battery absent, got %v", b.Battery)
+	}
+}
+func TestApmWithUnknownRechargeTime(t *testing.T) {
+	t.Parallel()
+	f, err := os.ReadFile("testdata/apm_unknown_charging_time.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = battery.ParseApmOutput(string(f))
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
 	}
 }
 func TestApmAdapterDisconnected(t *testing.T) {
