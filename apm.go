@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package battery
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -203,6 +204,13 @@ func (b *Battery) ParseApmBatteryPercent(input string) error {
 	}
 	return errors.New("Couldn't find battery percent")
 }
+func (b *Battery) ToJSON() (string,error) {
+	data, err := json.Marshal(b)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
 func (b *Battery) ParseApmOutput(input string) error {
 	battery, err := ParseApmOutput(input)
 	if err != nil {
@@ -249,13 +257,21 @@ func OpenBSDMain() int {
 	chargeStatus := flag.Bool("s", false, "Show whether the computer is charging")
 	adapterStatus := flag.Bool("a", false, "Show the status of the adapter")
 	percentRemaining := flag.Bool("p", false, "Show estimated remaining battery percent")
-
+	jsonOutput := flag.Bool("j", false, "Display output in JSON")
 	flag.Parse()
 	apm_output, err := GetApmOutput("/usr/sbin/apm")
 	battery, err := ParseApmOutput(apm_output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
+	}
+	if *jsonOutput {
+		j,err := battery.ToJSON()
+		if err != nil {
+			return 1
+		}
+		fmt.Println(j)
+		return 0
 	}
 	if *chargeStatus {
 		if battery.Charging {
@@ -275,3 +291,4 @@ func OpenBSDMain() int {
 	}
 	return 0
 }
+

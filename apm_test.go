@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package battery_test
 
 import (
+
 	"os"
 	"os/exec"
 	"strings"
@@ -286,4 +287,30 @@ func TestApmAdapterConnected(t *testing.T) {
 	if got.AdapterConnected != want {
 		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
 	}
+}
+
+func TestToJSON_GivesExpectedJSON(t *testing.T) {
+	t.Parallel()
+	input,err := os.ReadFile("testdata/apm.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	batt := battery.Battery{}
+	batt.ParseApmOutput(string(input))
+
+	wantBytes, err := os.ReadFile("testdata/apm.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := string(wantBytes)
+	got,err := batt.ToJSON()
+	if err != nil {
+		t.Error(err)
+	}
+	got += "\n"
+
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+	
 }
