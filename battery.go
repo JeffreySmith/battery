@@ -28,18 +28,17 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 package battery
 
 type BatteryStatus int
 type Mode int
 type Adapter int
 type Battery struct {
-	ChargePercent    int
-	Battery          BatteryStatus
-	Hours            int
-	Minutes          int
-	Charging         bool
-	PerformanceMode  Mode
-	AdapterConnected Adapter
+	ChargePercent   int
+	Battery         BatteryStatus
+	Hours           int
+	Minutes         int
+	Charging        bool
+	PerformanceMode Mode
+	AdapterStatus   Adapter
 }

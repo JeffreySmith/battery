@@ -188,7 +188,7 @@ func TestApmInputToString(t *testing.T) {
 		Hours:            9,
 		Minutes:          54,
 		Charging:         false,
-		AdapterConnected: battery.Disconnected,
+		AdapterStatus: battery.Disconnected,
 		Battery:          battery.High,
 	}
 	got, err := battery.ParseApmOutput(string(data))
@@ -210,7 +210,7 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 		Hours:            9,
 		Minutes:          54,
 		Charging:         false,
-		AdapterConnected: battery.Disconnected,
+		AdapterStatus: battery.Disconnected,
 	}
 	got := battery.Battery{}
 	err = got.ParseApmOutput(string(data))
@@ -253,11 +253,11 @@ func TestApmAdapterDisconnected(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Disconnected
-	got := battery.Battery{AdapterConnected: battery.UnknownAdapter}
+	got := battery.Battery{AdapterStatus: battery.UnknownAdapter}
 	got.ParseAdapterStatus(string(f))
 
-	if got.AdapterConnected != want {
-		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
+	if got.AdapterStatus != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterStatus)
 	}
 }
 func TestApmAdapterUnknown(t *testing.T) {
@@ -267,11 +267,11 @@ func TestApmAdapterUnknown(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.UnknownAdapter
-	got := battery.Battery{AdapterConnected: battery.Connected}
+	got := battery.Battery{AdapterStatus: battery.Connected}
 	got.ParseAdapterStatus(string(f))
 
-	if got.AdapterConnected != want {
-		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
+	if got.AdapterStatus != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterStatus)
 	}
 }
 func TestApmAdapterConnected(t *testing.T) {
@@ -281,11 +281,11 @@ func TestApmAdapterConnected(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Connected
-	got := battery.Battery{AdapterConnected: battery.UnknownAdapter}
+	got := battery.Battery{AdapterStatus: battery.UnknownAdapter}
 	got.ParseAdapterStatus(string(f))
 
-	if got.AdapterConnected != want {
-		t.Errorf("Want %v, got %v", want, got.AdapterConnected)
+	if got.AdapterStatus != want {
+		t.Errorf("Want %v, got %v", want, got.AdapterStatus)
 	}
 }
 

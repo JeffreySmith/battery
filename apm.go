@@ -146,7 +146,7 @@ func (b *Battery) ParseAdapterStatus(input string) {
 	} else {
 		status = UnknownAdapter
 	}
-	b.AdapterConnected = status
+	b.AdapterStatus = status
 }
 
 func (b *Battery) ParseApmBatteryLife(input string) error {
@@ -281,7 +281,7 @@ func OpenBSDMain() int {
 		}
 	}
 	if *adapterStatus {
-		fmt.Printf("Adapter Status: %v\n", battery.AdapterConnected)
+		fmt.Printf("Adapter Status: %v\n", battery.AdapterStatus)
 	}
 	if *percentRemaining {
 		fmt.Printf("Remaining battery: %d%%\n", battery.ChargePercent)
