@@ -211,12 +211,13 @@ func TestApmInputToStringCritical(t *testing.T) {
 		Minutes:       9,
 		Charging:      false,
 		AdapterStatus: battery.Disconnected,
+		Battery: battery.Critical,
 	}
 	got, err := battery.ParseApmOutput(string(data))
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
-	if !cmp.Equal(want, err) {
+	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
@@ -239,7 +240,7 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(want, got) {
+	if !cmp.Equal(want, err) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
