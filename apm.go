@@ -46,7 +46,7 @@ import (
 
 var batteryPercent = regexp.MustCompile("([0-9]+)%")
 var minuteOutput = regexp.MustCompile("([0-9]+) minutes")
-var state = regexp.MustCompile("Battery state: ([a-z]+)")
+var state = regexp.MustCompile("Battery state: ([A-Za-z]+)")
 
 // These Values come from the apm man page
 const (
@@ -121,7 +121,7 @@ func GetApmOutput(cmd string) (string, error) {
 func (b *Battery) ParseBatteryState(input string) {
 	matches := state.FindStringSubmatch(input)
 	if len(matches) == 2 {
-		switch matches[1] {
+		switch strings.ToLower(matches[1]) {
 		case "charging":
 			b.Battery = Charging
 		case "absent":
