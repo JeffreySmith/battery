@@ -30,6 +30,6 @@ jobs:
       uses: vmactions/openbsd-vm@v1.1.4
       with:
         prepare: |
-          pkg_add go git
+          pkg_add go
         run: |
           go test -v ./...
