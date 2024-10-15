@@ -26,3 +26,10 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+    -name Test in OpenBSD
+      uses: vmactions/openbsd-vm@v1.1.4
+      with:
+        prepare: |
+          pkg_add go
+        run :|
+          go test -v ./...
