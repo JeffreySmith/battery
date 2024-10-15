@@ -240,7 +240,7 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !cmp.Equal(want, err) {
+	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
