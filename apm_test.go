@@ -88,10 +88,12 @@ func TestBatteryLifeParseBadInput(t *testing.T) {
 	}
 }
 func TestApmCommandOutput(t *testing.T) {
+
 	t.Parallel()
 	if _, err := exec.LookPath("/usr/sbin/apm"); err != nil {
 		t.Skipf("Unable to run 'apm' command, skipping: %v", err)
 	}
+	t.Error("Test to see what happens?")
 	data, err := battery.GetApmOutput("/usr/sbin/apm")
 	if err != nil {
 		t.Error(err)
