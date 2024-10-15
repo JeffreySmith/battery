@@ -26,7 +26,7 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-    -name Test in OpenBSD
+    - name: Test in OpenBSD
       uses: vmactions/openbsd-vm@v1.1.4
       with:
         prepare: |
