@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package battery_test
 
 import (
-
 	"os"
 	"os/exec"
 	"strings"
@@ -184,12 +183,12 @@ func TestApmInputToString(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Battery{
-		ChargePercent:    90,
-		Hours:            9,
-		Minutes:          54,
-		Charging:         false,
+		ChargePercent: 90,
+		Hours:         9,
+		Minutes:       54,
+		Charging:      false,
 		AdapterStatus: battery.Disconnected,
-		Battery:          battery.High,
+		Battery:       battery.High,
 	}
 	got, err := battery.ParseApmOutput(string(data))
 	if err != nil {
@@ -199,6 +198,29 @@ func TestApmInputToString(t *testing.T) {
 		t.Error(cmp.Diff(want, got))
 	}
 }
+
+func TestApmInputToStringCritical(t *testing.T) {
+	t.Parallel()
+	data, err := os.ReadFile("testdata/apm_critical.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := battery.Battery{
+		ChargePercent: 23,
+		Hours:         3,
+		Minutes:       9,
+		Charging:      false,
+		AdapterStatus: battery.Disconnected,
+	}
+	got, err := battery.ParseApmOutput(string(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(want, err) {
+		t.Error(cmp.Diff(want, got))
+	}
+}
+
 func TestApmInputToStringOnStruct(t *testing.T) {
 	t.Parallel()
 	data, err := os.ReadFile("testdata/apm.txt")
@@ -206,10 +228,10 @@ func TestApmInputToStringOnStruct(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := battery.Battery{
-		ChargePercent:    90,
-		Hours:            9,
-		Minutes:          54,
-		Charging:         false,
+		ChargePercent: 90,
+		Hours:         9,
+		Minutes:       54,
+		Charging:      false,
 		AdapterStatus: battery.Disconnected,
 	}
 	got := battery.Battery{}
@@ -291,7 +313,7 @@ func TestApmAdapterConnected(t *testing.T) {
 
 func TestToJSON_GivesExpectedJSON(t *testing.T) {
 	t.Parallel()
-	input,err := os.ReadFile("testdata/apm.txt")
+	input, err := os.ReadFile("testdata/apm.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,7 +325,7 @@ func TestToJSON_GivesExpectedJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := string(wantBytes)
-	got,err := batt.ToJSON()
+	got, err := batt.ToJSON()
 	if err != nil {
 		t.Error(err)
 	}
@@ -312,5 +334,5 @@ func TestToJSON_GivesExpectedJSON(t *testing.T) {
 	if !cmp.Equal(want, got) {
 		t.Error(cmp.Diff(want, got))
 	}
-	
+
 }
